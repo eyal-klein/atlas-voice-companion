@@ -524,10 +524,14 @@ const EnergyWaves = ({ state }: BrainOrganismProps) => {
   );
 };
 
-// Face features - eyes that give it a face-like appearance
+// Face features - eyes and eyebrows that give it a face-like appearance
 const FaceFeatures = ({ state }: BrainOrganismProps) => {
   const leftEyeRef = useRef<THREE.Mesh>(null);
   const rightEyeRef = useRef<THREE.Mesh>(null);
+  const leftEyeGlowRef = useRef<THREE.Mesh>(null);
+  const rightEyeGlowRef = useRef<THREE.Mesh>(null);
+  const leftBrowRef = useRef<THREE.Mesh>(null);
+  const rightBrowRef = useRef<THREE.Mesh>(null);
 
   useFrame(({ clock }) => {
     if (!leftEyeRef.current || !rightEyeRef.current) return;
@@ -535,53 +539,122 @@ const FaceFeatures = ({ state }: BrainOrganismProps) => {
     const time = clock.getElapsedTime();
 
     // Subtle eye movement/blinking effect
-    const blink = Math.abs(Math.sin(time * 0.5)) * 0.1 + 0.9;
+    const blink = Math.abs(Math.sin(time * 0.5)) * 0.15 + 0.85;
     leftEyeRef.current.scale.set(1, blink, 1);
     rightEyeRef.current.scale.set(1, blink, 1);
 
-    // Slight glow pulsing
-    const glowIntensity = state === "listening" ? 1.2 : state === "speaking" ? 1.1 : 0.8;
-    const pulse = Math.sin(time * 2) * 0.2 + glowIntensity;
+    // Enhanced glow pulsing with stronger effect
+    const glowIntensity = state === "listening" ? 2.0 : state === "speaking" ? 1.8 : 1.2;
+    const pulse = Math.sin(time * 2) * 0.4 + glowIntensity;
     
     (leftEyeRef.current.material as THREE.MeshStandardMaterial).emissiveIntensity = pulse;
     (rightEyeRef.current.material as THREE.MeshStandardMaterial).emissiveIntensity = pulse;
+
+    // Animate glow spheres
+    if (leftEyeGlowRef.current && rightEyeGlowRef.current) {
+      const glowScale = 1 + Math.sin(time * 3) * 0.2;
+      leftEyeGlowRef.current.scale.setScalar(glowScale);
+      rightEyeGlowRef.current.scale.setScalar(glowScale);
+      
+      const glowOpacity = 0.3 + Math.sin(time * 2) * 0.2;
+      (leftEyeGlowRef.current.material as THREE.MeshBasicMaterial).opacity = glowOpacity;
+      (rightEyeGlowRef.current.material as THREE.MeshBasicMaterial).opacity = glowOpacity;
+    }
+
+    // Subtle eyebrow animation based on state
+    if (leftBrowRef.current && rightBrowRef.current) {
+      const browLift = state === "listening" ? 0.05 : state === "speaking" ? 0.02 : 0;
+      leftBrowRef.current.position.y = 0.55 + browLift + Math.sin(time * 0.5) * 0.01;
+      rightBrowRef.current.position.y = 0.55 + browLift + Math.sin(time * 0.5) * 0.01;
+    }
   });
 
   const eyeColor = state === "listening" ? "#f0abfc" : state === "speaking" ? "#6ee7b7" : state === "processing" ? "#7dd3fc" : "#c4b5fd";
+  const browColor = state === "listening" ? "#d946ef" : state === "speaking" ? "#14b8a6" : state === "processing" ? "#0ea5e9" : "#a78bfa";
 
   return (
     <group>
       {/* Left Eye */}
       <mesh ref={leftEyeRef} position={[-0.45, 0.3, 1.2]}>
-        <sphereGeometry args={[0.15, 16, 16]} />
+        <sphereGeometry args={[0.18, 20, 20]} />
         <meshStandardMaterial
           color={eyeColor}
           emissive={eyeColor}
-          emissiveIntensity={0.9}
-          metalness={0.3}
-          roughness={0.2}
+          emissiveIntensity={1.5}
+          metalness={0.4}
+          roughness={0.1}
           transparent
-          opacity={0.95}
+          opacity={0.98}
         />
       </mesh>
       
       {/* Right Eye */}
       <mesh ref={rightEyeRef} position={[0.45, 0.3, 1.2]}>
-        <sphereGeometry args={[0.15, 16, 16]} />
+        <sphereGeometry args={[0.18, 20, 20]} />
         <meshStandardMaterial
           color={eyeColor}
           emissive={eyeColor}
-          emissiveIntensity={0.9}
-          metalness={0.3}
-          roughness={0.2}
+          emissiveIntensity={1.5}
+          metalness={0.4}
+          roughness={0.1}
           transparent
-          opacity={0.95}
+          opacity={0.98}
         />
       </mesh>
 
-      {/* Eye glow effect */}
-      <pointLight position={[-0.45, 0.3, 1.4]} intensity={0.8} color={eyeColor} distance={2} />
-      <pointLight position={[0.45, 0.3, 1.4]} intensity={0.8} color={eyeColor} distance={2} />
+      {/* Left Eye Outer Glow */}
+      <mesh ref={leftEyeGlowRef} position={[-0.45, 0.3, 1.2]}>
+        <sphereGeometry args={[0.28, 16, 16]} />
+        <meshBasicMaterial
+          color={eyeColor}
+          transparent
+          opacity={0.3}
+          blending={THREE.AdditiveBlending}
+        />
+      </mesh>
+
+      {/* Right Eye Outer Glow */}
+      <mesh ref={rightEyeGlowRef} position={[0.45, 0.3, 1.2]}>
+        <sphereGeometry args={[0.28, 16, 16]} />
+        <meshBasicMaterial
+          color={eyeColor}
+          transparent
+          opacity={0.3}
+          blending={THREE.AdditiveBlending}
+        />
+      </mesh>
+
+      {/* Left Eyebrow - curved arc */}
+      <mesh ref={leftBrowRef} position={[-0.45, 0.55, 1.15]} rotation={[0, 0, -0.1]}>
+        <torusGeometry args={[0.22, 0.03, 8, 16, Math.PI * 0.6]} />
+        <meshStandardMaterial
+          color={browColor}
+          emissive={browColor}
+          emissiveIntensity={0.6}
+          transparent
+          opacity={0.85}
+        />
+      </mesh>
+
+      {/* Right Eyebrow - curved arc */}
+      <mesh ref={rightBrowRef} position={[0.45, 0.55, 1.15]} rotation={[0, 0, 0.1]}>
+        <torusGeometry args={[0.22, 0.03, 8, 16, Math.PI * 0.6]} />
+        <meshStandardMaterial
+          color={browColor}
+          emissive={browColor}
+          emissiveIntensity={0.6}
+          transparent
+          opacity={0.85}
+        />
+      </mesh>
+
+      {/* Enhanced Eye lights */}
+      <pointLight position={[-0.45, 0.3, 1.5]} intensity={1.5} color={eyeColor} distance={2.5} />
+      <pointLight position={[0.45, 0.3, 1.5]} intensity={1.5} color={eyeColor} distance={2.5} />
+      
+      {/* Additional rim lights for dramatic effect */}
+      <pointLight position={[-0.45, 0.3, 1.0]} intensity={0.8} color={eyeColor} distance={1.5} />
+      <pointLight position={[0.45, 0.3, 1.0]} intensity={0.8} color={eyeColor} distance={1.5} />
     </group>
   );
 };
