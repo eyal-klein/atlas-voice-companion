@@ -12,7 +12,7 @@ interface UseVoiceSessionReturn {
 }
 
 // Updated to use Live API endpoint
-const WEBSOCKET_URL = "wss://nucleus-atlas-backend-v2-796362729654.europe-west1.run.app/api/voice/stream?user_id=eyal_klein";
+const WEBSOCKET_URL = "wss://nucleus-atlas-backend-v2-xeihvetbja-ew.a.run.app/api/voice/stream?user_id=eyal_klein";
 
 export function useVoiceSession(): UseVoiceSessionReturn {
   const [state, setState] = useState<VoiceState>("idle");
