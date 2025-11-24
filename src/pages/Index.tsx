@@ -106,7 +106,7 @@ const Index = () => {
           </div>
         )}
 
-        {/* CC THRIVE SYSTEM Subtitle */}
+        {/* © 2025 THRIVE SYSTEM Subtitle */}
         {statusText.sub && (
           <div className="text-center mb-4">
             <h3
@@ -116,7 +116,7 @@ const Index = () => {
                 opacity: state === "idle" ? 1 : 0.3,
               }}
             >
-              CC THRIVE SYSTEM
+              © 2025 THRIVE SYSTEM
             </h3>
           </div>
         )}
