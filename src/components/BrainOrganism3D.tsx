@@ -524,6 +524,68 @@ const EnergyWaves = ({ state }: BrainOrganismProps) => {
   );
 };
 
+// Face features - eyes that give it a face-like appearance
+const FaceFeatures = ({ state }: BrainOrganismProps) => {
+  const leftEyeRef = useRef<THREE.Mesh>(null);
+  const rightEyeRef = useRef<THREE.Mesh>(null);
+
+  useFrame(({ clock }) => {
+    if (!leftEyeRef.current || !rightEyeRef.current) return;
+
+    const time = clock.getElapsedTime();
+
+    // Subtle eye movement/blinking effect
+    const blink = Math.abs(Math.sin(time * 0.5)) * 0.1 + 0.9;
+    leftEyeRef.current.scale.set(1, blink, 1);
+    rightEyeRef.current.scale.set(1, blink, 1);
+
+    // Slight glow pulsing
+    const glowIntensity = state === "listening" ? 1.2 : state === "speaking" ? 1.1 : 0.8;
+    const pulse = Math.sin(time * 2) * 0.2 + glowIntensity;
+    
+    (leftEyeRef.current.material as THREE.MeshStandardMaterial).emissiveIntensity = pulse;
+    (rightEyeRef.current.material as THREE.MeshStandardMaterial).emissiveIntensity = pulse;
+  });
+
+  const eyeColor = state === "listening" ? "#f0abfc" : state === "speaking" ? "#6ee7b7" : state === "processing" ? "#7dd3fc" : "#c4b5fd";
+
+  return (
+    <group>
+      {/* Left Eye */}
+      <mesh ref={leftEyeRef} position={[-0.45, 0.3, 1.2]}>
+        <sphereGeometry args={[0.15, 16, 16]} />
+        <meshStandardMaterial
+          color={eyeColor}
+          emissive={eyeColor}
+          emissiveIntensity={0.9}
+          metalness={0.3}
+          roughness={0.2}
+          transparent
+          opacity={0.95}
+        />
+      </mesh>
+      
+      {/* Right Eye */}
+      <mesh ref={rightEyeRef} position={[0.45, 0.3, 1.2]}>
+        <sphereGeometry args={[0.15, 16, 16]} />
+        <meshStandardMaterial
+          color={eyeColor}
+          emissive={eyeColor}
+          emissiveIntensity={0.9}
+          metalness={0.3}
+          roughness={0.2}
+          transparent
+          opacity={0.95}
+        />
+      </mesh>
+
+      {/* Eye glow effect */}
+      <pointLight position={[-0.45, 0.3, 1.4]} intensity={0.8} color={eyeColor} distance={2} />
+      <pointLight position={[0.45, 0.3, 1.4]} intensity={0.8} color={eyeColor} distance={2} />
+    </group>
+  );
+};
+
 // Neural particles floating around brain
 const NeuralParticles = ({ state }: BrainOrganismProps) => {
   const particlesRef = useRef<THREE.Points>(null);
@@ -626,6 +688,7 @@ export const BrainOrganism3D = ({ state, onClick }: { state: OrganismState; onCl
         <EnergyWaves state={state} />
         <NeurotransmitterParticles state={state} />
         <NeuralParticles state={state} />
+        <FaceFeatures state={state} />
       </Canvas>
     </div>
   );
