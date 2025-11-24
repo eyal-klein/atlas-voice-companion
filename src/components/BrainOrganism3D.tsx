@@ -429,6 +429,101 @@ const NeurotransmitterParticles = ({ state }: BrainOrganismProps) => {
   );
 };
 
+// Energy waves traveling along synaptic connections
+const EnergyWaves = ({ state }: BrainOrganismProps) => {
+  const wavesRef = useRef<THREE.Group>(null);
+  
+  const waveCount = 15;
+  const { synapticPaths } = useMemo(() => {
+    const paths: Array<{ start: THREE.Vector3; end: THREE.Vector3; direction: THREE.Vector3 }> = [];
+    
+    // Generate synaptic paths (matching previous components)
+    for (let i = 0; i < waveCount; i++) {
+      const theta1 = Math.random() * Math.PI * 2;
+      const phi1 = Math.random() * Math.PI;
+      const theta2 = Math.random() * Math.PI * 2;
+      const phi2 = Math.random() * Math.PI;
+      const radius = 1.45;
+      
+      const brainMod1 = Math.abs(Math.sin(theta1 * 2)) * 0.3;
+      const brainMod2 = Math.abs(Math.sin(theta2 * 2)) * 0.3;
+      
+      const start = new THREE.Vector3(
+        radius * Math.sin(phi1) * Math.cos(theta1) * (1 + brainMod1),
+        radius * Math.sin(phi1) * Math.sin(theta1) * 1.1,
+        radius * Math.cos(phi1) * (1 + brainMod1)
+      );
+      
+      const end = new THREE.Vector3(
+        radius * Math.sin(phi2) * Math.cos(theta2) * (1 + brainMod2),
+        radius * Math.sin(phi2) * Math.sin(theta2) * 1.1,
+        radius * Math.cos(phi2) * (1 + brainMod2)
+      );
+      
+      const direction = new THREE.Vector3().subVectors(end, start).normalize();
+      
+      paths.push({ start, end, direction });
+    }
+    
+    return { synapticPaths: paths };
+  }, []);
+  
+  useFrame(({ clock }) => {
+    if (!wavesRef.current) return;
+    
+    const time = clock.getElapsedTime();
+    
+    // Rotate with brain
+    wavesRef.current.rotation.y = time * 0.05;
+    
+    // Movement speed varies by state
+    const speedMultiplier = state === "processing" ? 2.0 : state === "listening" ? 1.6 : 1.2;
+    
+    wavesRef.current.children.forEach((wave, i) => {
+      const path = synapticPaths[i];
+      const speed = 0.4 * speedMultiplier;
+      
+      // Calculate position along the path (0 to 1)
+      const progress = (time * speed + i * 0.35) % 1;
+      
+      // Position along the line
+      wave.position.lerpVectors(path.start, path.end, progress);
+      
+      // Orient the ring perpendicular to the path
+      const lookAtPoint = new THREE.Vector3().addVectors(wave.position, path.direction);
+      wave.lookAt(lookAtPoint);
+      
+      // Pulse effect - waves expand and contract as they travel
+      const pulse = 0.8 + Math.sin(progress * Math.PI * 2) * 0.3;
+      wave.scale.setScalar(pulse);
+      
+      // Fade in/out at start and end
+      const material = (wave as THREE.Mesh).material as THREE.MeshBasicMaterial;
+      const fadeIn = Math.min(progress * 4, 1);
+      const fadeOut = Math.min((1 - progress) * 4, 1);
+      material.opacity = Math.min(fadeIn, fadeOut) * 0.7;
+    });
+  });
+  
+  const waveColor = state === "processing" ? "#3b82f6" : state === "listening" ? "#06b6d4" : "#14b8a6";
+  
+  return (
+    <group ref={wavesRef}>
+      {Array.from({ length: waveCount }).map((_, i) => (
+        <mesh key={i}>
+          <torusGeometry args={[0.08, 0.02, 8, 16]} />
+          <meshBasicMaterial
+            color={waveColor}
+            transparent
+            opacity={0.7}
+            blending={THREE.AdditiveBlending}
+          />
+        </mesh>
+      ))}
+    </group>
+  );
+};
+
 // Neural particles floating around brain
 const NeuralParticles = ({ state }: BrainOrganismProps) => {
   const particlesRef = useRef<THREE.Points>(null);
@@ -528,6 +623,7 @@ export const BrainOrganism3D = ({ state, onClick }: { state: OrganismState; onCl
         <InternalLight state={state} />
         <BioluminescentSpots state={state} />
         <SynapticConnections state={state} />
+        <EnergyWaves state={state} />
         <NeurotransmitterParticles state={state} />
         <NeuralParticles state={state} />
       </Canvas>
