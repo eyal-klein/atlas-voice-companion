@@ -293,7 +293,7 @@ All colors MUST be HSL.
     background-clip: text;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
-    animation: lightning-shine 3s linear infinite;
+    animation: lightning-shine 8s linear infinite;
   }
 }
 
