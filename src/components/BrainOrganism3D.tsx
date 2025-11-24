@@ -524,137 +524,109 @@ const EnergyWaves = ({ state }: BrainOrganismProps) => {
   );
 };
 
-// Face features - eyes and eyebrows that give it a face-like appearance
+// Subtle face hints - implied facial features through light patterns
 const FaceFeatures = ({ state }: BrainOrganismProps) => {
-  const leftEyeRef = useRef<THREE.Mesh>(null);
-  const rightEyeRef = useRef<THREE.Mesh>(null);
-  const leftEyeGlowRef = useRef<THREE.Mesh>(null);
-  const rightEyeGlowRef = useRef<THREE.Mesh>(null);
-  const leftBrowRef = useRef<THREE.Mesh>(null);
-  const rightBrowRef = useRef<THREE.Mesh>(null);
+  const leftFeatureRef = useRef<THREE.Points>(null);
+  const rightFeatureRef = useRef<THREE.Points>(null);
+  const expressionRef = useRef<THREE.Mesh>(null);
 
   useFrame(({ clock }) => {
-    if (!leftEyeRef.current || !rightEyeRef.current) return;
-
     const time = clock.getElapsedTime();
 
-    // Subtle eye movement/blinking effect
-    const blink = Math.abs(Math.sin(time * 0.5)) * 0.15 + 0.85;
-    leftEyeRef.current.scale.set(1, blink, 1);
-    rightEyeRef.current.scale.set(1, blink, 1);
-
-    // Enhanced glow pulsing with stronger effect
-    const glowIntensity = state === "listening" ? 2.0 : state === "speaking" ? 1.8 : 1.2;
-    const pulse = Math.sin(time * 2) * 0.4 + glowIntensity;
-    
-    (leftEyeRef.current.material as THREE.MeshStandardMaterial).emissiveIntensity = pulse;
-    (rightEyeRef.current.material as THREE.MeshStandardMaterial).emissiveIntensity = pulse;
-
-    // Animate glow spheres
-    if (leftEyeGlowRef.current && rightEyeGlowRef.current) {
-      const glowScale = 1 + Math.sin(time * 3) * 0.2;
-      leftEyeGlowRef.current.scale.setScalar(glowScale);
-      rightEyeGlowRef.current.scale.setScalar(glowScale);
+    // Gentle pulsing of feature points
+    if (leftFeatureRef.current && rightFeatureRef.current) {
+      const pulse = Math.sin(time * 2) * 0.5 + 0.5;
+      const material1 = leftFeatureRef.current.material as THREE.PointsMaterial;
+      const material2 = rightFeatureRef.current.material as THREE.PointsMaterial;
       
-      const glowOpacity = 0.3 + Math.sin(time * 2) * 0.2;
-      (leftEyeGlowRef.current.material as THREE.MeshBasicMaterial).opacity = glowOpacity;
-      (rightEyeGlowRef.current.material as THREE.MeshBasicMaterial).opacity = glowOpacity;
+      const baseOpacity = state === "listening" ? 0.7 : state === "speaking" ? 0.65 : 0.5;
+      material1.opacity = baseOpacity + pulse * 0.3;
+      material2.opacity = baseOpacity + pulse * 0.3;
     }
 
-    // Subtle eyebrow animation based on state
-    if (leftBrowRef.current && rightBrowRef.current) {
-      const browLift = state === "listening" ? 0.05 : state === "speaking" ? 0.02 : 0;
-      leftBrowRef.current.position.y = 0.55 + browLift + Math.sin(time * 0.5) * 0.01;
-      rightBrowRef.current.position.y = 0.55 + browLift + Math.sin(time * 0.5) * 0.01;
+    // Subtle expression arc animation
+    if (expressionRef.current) {
+      const expressionPulse = Math.sin(time * 1.5) * 0.1;
+      expressionRef.current.scale.set(1 + expressionPulse, 1, 1);
+      
+      const material = expressionRef.current.material as THREE.MeshBasicMaterial;
+      material.opacity = 0.2 + Math.sin(time * 1.2) * 0.1;
     }
   });
 
-  const eyeColor = state === "listening" ? "#f0abfc" : state === "speaking" ? "#6ee7b7" : state === "processing" ? "#7dd3fc" : "#c4b5fd";
-  const browColor = state === "listening" ? "#d946ef" : state === "speaking" ? "#14b8a6" : state === "processing" ? "#0ea5e9" : "#a78bfa";
+  const featureColor = state === "listening" ? "#d946ef" : state === "speaking" ? "#14b8a6" : state === "processing" ? "#0ea5e9" : "#a78bfa";
+
+  // Create subtle dot patterns for implied eyes
+  const leftEyePositions = new Float32Array([
+    -0.35, 0.25, 1.3,
+    -0.4, 0.3, 1.28,
+    -0.3, 0.3, 1.28,
+    -0.35, 0.35, 1.26,
+  ]);
+
+  const rightEyePositions = new Float32Array([
+    0.35, 0.25, 1.3,
+    0.4, 0.3, 1.28,
+    0.3, 0.3, 1.28,
+    0.35, 0.35, 1.26,
+  ]);
 
   return (
     <group>
-      {/* Left Eye */}
-      <mesh ref={leftEyeRef} position={[-0.45, 0.3, 1.2]}>
-        <sphereGeometry args={[0.18, 20, 20]} />
-        <meshStandardMaterial
-          color={eyeColor}
-          emissive={eyeColor}
-          emissiveIntensity={1.5}
-          metalness={0.4}
-          roughness={0.1}
+      {/* Left feature dots - subtle eye hint */}
+      <points ref={leftFeatureRef}>
+        <bufferGeometry>
+          <bufferAttribute
+            attach="attributes-position"
+            count={4}
+            array={leftEyePositions}
+            itemSize={3}
+          />
+        </bufferGeometry>
+        <pointsMaterial
+          size={0.06}
+          color={featureColor}
           transparent
-          opacity={0.98}
+          opacity={0.6}
+          sizeAttenuation
+          blending={THREE.AdditiveBlending}
         />
-      </mesh>
-      
-      {/* Right Eye */}
-      <mesh ref={rightEyeRef} position={[0.45, 0.3, 1.2]}>
-        <sphereGeometry args={[0.18, 20, 20]} />
-        <meshStandardMaterial
-          color={eyeColor}
-          emissive={eyeColor}
-          emissiveIntensity={1.5}
-          metalness={0.4}
-          roughness={0.1}
-          transparent
-          opacity={0.98}
-        />
-      </mesh>
+      </points>
 
-      {/* Left Eye Outer Glow */}
-      <mesh ref={leftEyeGlowRef} position={[-0.45, 0.3, 1.2]}>
-        <sphereGeometry args={[0.28, 16, 16]} />
-        <meshBasicMaterial
-          color={eyeColor}
+      {/* Right feature dots - subtle eye hint */}
+      <points ref={rightFeatureRef}>
+        <bufferGeometry>
+          <bufferAttribute
+            attach="attributes-position"
+            count={4}
+            array={rightEyePositions}
+            itemSize={3}
+          />
+        </bufferGeometry>
+        <pointsMaterial
+          size={0.06}
+          color={featureColor}
           transparent
-          opacity={0.3}
+          opacity={0.6}
+          sizeAttenuation
+          blending={THREE.AdditiveBlending}
+        />
+      </points>
+
+      {/* Subtle expression arc - implied smile/mouth */}
+      <mesh ref={expressionRef} position={[0, 0.05, 1.25]} rotation={[0, 0, Math.PI]}>
+        <torusGeometry args={[0.25, 0.015, 6, 12, Math.PI * 0.5]} />
+        <meshBasicMaterial
+          color={featureColor}
+          transparent
+          opacity={0.2}
           blending={THREE.AdditiveBlending}
         />
       </mesh>
 
-      {/* Right Eye Outer Glow */}
-      <mesh ref={rightEyeGlowRef} position={[0.45, 0.3, 1.2]}>
-        <sphereGeometry args={[0.28, 16, 16]} />
-        <meshBasicMaterial
-          color={eyeColor}
-          transparent
-          opacity={0.3}
-          blending={THREE.AdditiveBlending}
-        />
-      </mesh>
-
-      {/* Left Eyebrow - curved arc */}
-      <mesh ref={leftBrowRef} position={[-0.45, 0.55, 1.15]} rotation={[0, 0, -0.1]}>
-        <torusGeometry args={[0.22, 0.03, 8, 16, Math.PI * 0.6]} />
-        <meshStandardMaterial
-          color={browColor}
-          emissive={browColor}
-          emissiveIntensity={0.6}
-          transparent
-          opacity={0.85}
-        />
-      </mesh>
-
-      {/* Right Eyebrow - curved arc */}
-      <mesh ref={rightBrowRef} position={[0.45, 0.55, 1.15]} rotation={[0, 0, 0.1]}>
-        <torusGeometry args={[0.22, 0.03, 8, 16, Math.PI * 0.6]} />
-        <meshStandardMaterial
-          color={browColor}
-          emissive={browColor}
-          emissiveIntensity={0.6}
-          transparent
-          opacity={0.85}
-        />
-      </mesh>
-
-      {/* Enhanced Eye lights */}
-      <pointLight position={[-0.45, 0.3, 1.5]} intensity={1.5} color={eyeColor} distance={2.5} />
-      <pointLight position={[0.45, 0.3, 1.5]} intensity={1.5} color={eyeColor} distance={2.5} />
-      
-      {/* Additional rim lights for dramatic effect */}
-      <pointLight position={[-0.45, 0.3, 1.0]} intensity={0.8} color={eyeColor} distance={1.5} />
-      <pointLight position={[0.45, 0.3, 1.0]} intensity={0.8} color={eyeColor} distance={1.5} />
+      {/* Very subtle ambient lights for depth */}
+      <pointLight position={[-0.35, 0.3, 1.4]} intensity={0.3} color={featureColor} distance={1.2} />
+      <pointLight position={[0.35, 0.3, 1.4]} intensity={0.3} color={featureColor} distance={1.2} />
     </group>
   );
 };
