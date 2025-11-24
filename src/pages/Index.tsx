@@ -53,7 +53,7 @@ const Index = () => {
       case "speaking":
         return { main: "NUCLEUS משיב", sub: "" };
       default:
-        return { main: "כנס להדבר", sub: "NUCLEUS ATLAS" };
+        return { main: "", sub: "NUCLEUS ATLAS" };
     }
   };
 
