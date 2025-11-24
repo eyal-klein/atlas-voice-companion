@@ -73,6 +73,19 @@ const Index = () => {
       <CosmicBackground />
 
       <div className="relative flex flex-col items-center justify-start min-h-screen pt-[25vh] px-6">
+        {/* WE 2.0 Title */}
+        <div className="text-center mb-8">
+          <h2
+            className="text-xl tracking-[0.4em] font-light transition-opacity duration-300"
+            style={{
+              color: "rgba(255, 255, 255, 0.5)",
+              opacity: state === "idle" ? 1 : 0.3,
+            }}
+          >
+            WE 2.0
+          </h2>
+        </div>
+
         {/* Neural Sphere */}
         <div className="mb-10">
           <NeuralSphere state={state} onClick={handleSphereClick} />
@@ -80,7 +93,7 @@ const Index = () => {
 
         {/* Logo Text */}
         {statusText.sub && (
-          <div className="text-center mb-3">
+          <div className="text-center mb-2">
             <h1
               className="text-2xl tracking-[0.3em] font-extralight transition-opacity duration-300"
               style={{
@@ -90,6 +103,21 @@ const Index = () => {
             >
               {statusText.sub}
             </h1>
+          </div>
+        )}
+
+        {/* CC THRIVE SYSTEM Subtitle */}
+        {statusText.sub && (
+          <div className="text-center mb-4">
+            <h3
+              className="text-sm tracking-[0.25em] font-extralight transition-opacity duration-300"
+              style={{
+                color: "rgba(255, 255, 255, 0.4)",
+                opacity: state === "idle" ? 1 : 0.3,
+              }}
+            >
+              CC THRIVE SYSTEM
+            </h3>
           </div>
         )}
 
