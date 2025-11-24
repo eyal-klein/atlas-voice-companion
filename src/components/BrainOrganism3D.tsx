@@ -52,32 +52,36 @@ const BrainMesh = ({ state }: BrainOrganismProps) => {
   
   const brainGeometry = useMemo(() => createBrainGeometry(), []);
 
-  // State-based colors (organic bio colors)
+  // State-based colors (organic living colors - cyan/teal/green)
   const colors = useMemo(() => {
     switch (state) {
       case "listening":
         return {
-          color: "#10b981", // emerald green
-          emissive: "#86efac",
-          emissiveIntensity: 0.4,
+          color: "#06b6d4", // cyan
+          emissive: "#22d3ee", // bright cyan
+          emissiveIntensity: 0.6,
+          secondaryColor: "#10b981", // emerald
         };
       case "processing":
         return {
-          color: "#8b5cf6", // purple
-          emissive: "#a78bfa",
-          emissiveIntensity: 0.3,
+          color: "#0ea5e9", // sky blue
+          emissive: "#38bdf8",
+          emissiveIntensity: 0.45,
+          secondaryColor: "#3b82f6", // blue
         };
       case "speaking":
         return {
-          color: "#fb923c", // orange
-          emissive: "#fcd34d",
-          emissiveIntensity: 0.5,
+          color: "#14b8a6", // teal
+          emissive: "#2dd4bf",
+          emissiveIntensity: 0.65,
+          secondaryColor: "#34d399", // green
         };
       default:
         return {
-          color: "#a78bfa", // soft purple
-          emissive: "#ec4899",
-          emissiveIntensity: 0.25,
+          color: "#0891b2", // cyan-600
+          emissive: "#06b6d4",
+          emissiveIntensity: 0.35,
+          secondaryColor: "#0284c7", // sky-600
         };
     }
   }, [state]);
@@ -142,12 +146,13 @@ const BrainMesh = ({ state }: BrainOrganismProps) => {
         color={colors.color}
         emissive={colors.emissive}
         emissiveIntensity={colors.emissiveIntensity}
-        metalness={0.15}
-        roughness={0.4}
+        metalness={0.25}
+        roughness={0.35}
         distort={0.25}
         speed={1.2}
         transparent
-        opacity={0.92}
+        opacity={0.88}
+        envMapIntensity={1.2}
       />
     </mesh>
   );
@@ -214,10 +219,10 @@ const NeuralParticles = ({ state }: BrainOrganismProps) => {
         />
       </bufferGeometry>
       <pointsMaterial
-        size={0.045}
-        color={state === "listening" ? "#86efac" : state === "speaking" ? "#fcd34d" : "#c4b5fd"}
+        size={0.05}
+        color={state === "listening" ? "#5eead4" : state === "speaking" ? "#34d399" : "#67e8f9"}
         transparent
-        opacity={0.7}
+        opacity={0.75}
         sizeAttenuation
         blending={THREE.AdditiveBlending}
       />
@@ -232,20 +237,21 @@ export const BrainOrganism3D = ({ state, onClick }: { state: OrganismState; onCl
       onClick={onClick}
       style={{
         filter: state === "listening" 
-          ? "drop-shadow(0 0 80px rgba(34, 197, 94, 0.6))"
+          ? "drop-shadow(0 0 80px rgba(6, 182, 212, 0.7)) drop-shadow(0 0 40px rgba(34, 211, 238, 0.5))"
           : state === "speaking"
-          ? "drop-shadow(0 0 70px rgba(251, 146, 60, 0.6))"
-          : "drop-shadow(0 0 60px rgba(139, 92, 246, 0.5))"
+          ? "drop-shadow(0 0 70px rgba(20, 184, 166, 0.7)) drop-shadow(0 0 40px rgba(52, 211, 153, 0.5))"
+          : "drop-shadow(0 0 60px rgba(8, 145, 178, 0.6)) drop-shadow(0 0 35px rgba(6, 182, 212, 0.4))"
       }}
     >
       <Canvas
         camera={{ position: [0, 0.3, 4.2], fov: 42 }}
         gl={{ alpha: true, antialias: true, powerPreference: "high-performance" }}
       >
-        <ambientLight intensity={0.4} />
-        <pointLight position={[8, 8, 8]} intensity={1} color="#c4b5fd" />
-        <pointLight position={[-8, -8, -8]} intensity={0.5} color="#f9a8d4" />
-        <pointLight position={[0, 10, 0]} intensity={0.6} color="#e9d5ff" />
+        <ambientLight intensity={0.5} color="#e0f2fe" />
+        <pointLight position={[8, 8, 8]} intensity={1.2} color="#06b6d4" />
+        <pointLight position={[-8, -8, -8]} intensity={0.6} color="#14b8a6" />
+        <pointLight position={[0, 10, 0]} intensity={0.8} color="#22d3ee" />
+        <pointLight position={[5, -5, 5]} intensity={0.5} color="#0ea5e9" />
         
         <BrainMesh state={state} />
         <NeuralParticles state={state} />
