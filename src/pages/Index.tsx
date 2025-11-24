@@ -7,7 +7,7 @@ import { useVoiceSession } from "@/hooks/useVoiceSession";
 type AppState = "idle" | "listening" | "processing" | "speaking";
 
 const Index = () => {
-  const { state, errorMessage, toggleSession } = useVoiceSession();
+  const { state, errorMessage, transcript, toggleSession } = useVoiceSession();
 
   // Map voice session states to app states
   const appState: AppState = 
@@ -131,6 +131,17 @@ const Index = () => {
             {statusText.main}
           </p>
         </div>
+
+        {/* Transcript Display */}
+        {transcript && (
+          <div className="mt-6 max-w-md mx-auto px-6 animate-fade-in" dir="rtl">
+            <div className="bg-black/30 backdrop-blur-sm border border-white/10 rounded-lg p-4">
+              <p className="text-sm text-white/80 font-light text-center">
+                {transcript}
+              </p>
+            </div>
+          </div>
+        )}
 
         {/* Recording Indicator */}
         {appState === "listening" && (
