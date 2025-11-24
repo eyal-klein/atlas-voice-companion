@@ -1,6 +1,6 @@
 import { useRef, useMemo } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
-import { MeshDistortMaterial, Sphere } from "@react-three/drei";
+import { MeshDistortMaterial } from "@react-three/drei";
 import * as THREE from "three";
 
 type OrganismState = "idle" | "listening" | "processing" | "speaking";
@@ -9,9 +9,48 @@ interface BrainOrganismProps {
   state: OrganismState;
 }
 
+// Custom brain-shaped geometry
+const createBrainGeometry = () => {
+  const geometry = new THREE.SphereGeometry(1, 64, 64);
+  const positions = geometry.attributes.position;
+  
+  for (let i = 0; i < positions.count; i++) {
+    const x = positions.getX(i);
+    const y = positions.getY(i);
+    const z = positions.getZ(i);
+    
+    // Create two-lobe brain shape
+    const angle = Math.atan2(z, x);
+    const radius = Math.sqrt(x * x + z * z);
+    
+    // Split into hemispheres with connection
+    const hemisphereModulation = Math.abs(Math.sin(angle)) * 0.3;
+    const verticalSquash = 1 - Math.abs(y) * 0.15;
+    const lobeSeparation = Math.sin(angle * 2) * 0.15 * (1 - Math.abs(y));
+    
+    // Organic bumps and folds (cortical texture)
+    const corticalBumps = 
+      Math.sin(x * 8 + y * 6) * 0.05 +
+      Math.sin(y * 10 + z * 7) * 0.04 +
+      Math.sin(z * 9 + x * 8) * 0.03;
+    
+    // Apply deformations
+    const newX = x * (1 + hemisphereModulation + lobeSeparation) * verticalSquash * (1 + corticalBumps);
+    const newY = y * 1.15 * (1 + corticalBumps * 0.5); // Stretch vertically
+    const newZ = z * (1 + hemisphereModulation + lobeSeparation) * verticalSquash * (1 + corticalBumps);
+    
+    positions.setXYZ(i, newX, newY, newZ);
+  }
+  
+  geometry.computeVertexNormals();
+  return geometry;
+};
+
 const BrainMesh = ({ state }: BrainOrganismProps) => {
   const meshRef = useRef<THREE.Mesh>(null);
   const materialRef = useRef<any>(null);
+  
+  const brainGeometry = useMemo(() => createBrainGeometry(), []);
 
   // State-based colors (organic bio colors)
   const colors = useMemo(() => {
@@ -43,7 +82,7 @@ const BrainMesh = ({ state }: BrainOrganismProps) => {
     }
   }, [state]);
 
-  // Animation based on state
+  // Organic animation based on state
   useFrame(({ clock }) => {
     if (!meshRef.current || !materialRef.current) return;
 
@@ -51,64 +90,88 @@ const BrainMesh = ({ state }: BrainOrganismProps) => {
 
     switch (state) {
       case "listening":
-        // Fast pulsing
-        meshRef.current.scale.setScalar(1 + Math.sin(time * 3) * 0.08);
-        materialRef.current.distort = 0.3 + Math.sin(time * 2) * 0.1;
+        // Fast organic pulsing - asymmetric
+        const listenScale = 1 + Math.sin(time * 3) * 0.08;
+        meshRef.current.scale.set(
+          listenScale * 1.02,
+          listenScale * 0.98,
+          listenScale
+        );
+        meshRef.current.rotation.y = Math.sin(time * 0.5) * 0.1;
+        materialRef.current.distort = 0.35 + Math.sin(time * 2) * 0.12;
         break;
       case "processing":
-        // Slow rotation with distortion
+        // Slow rotation with organic wobble
         meshRef.current.rotation.y = time * 0.3;
-        meshRef.current.rotation.x = Math.sin(time * 0.5) * 0.1;
-        materialRef.current.distort = 0.4;
+        meshRef.current.rotation.x = Math.sin(time * 0.7) * 0.12;
+        meshRef.current.rotation.z = Math.cos(time * 0.5) * 0.08;
+        meshRef.current.scale.set(1.03, 0.97, 1);
+        materialRef.current.distort = 0.45;
         break;
       case "speaking":
-        // Rhythmic pulsing
-        meshRef.current.scale.setScalar(1 + Math.sin(time * 4) * 0.06);
-        materialRef.current.distort = 0.25 + Math.sin(time * 3) * 0.1;
+        // Rhythmic pulsing with expression
+        const speakScale = 1 + Math.sin(time * 4) * 0.07;
+        meshRef.current.scale.set(
+          speakScale,
+          speakScale * 1.05,
+          speakScale * 0.98
+        );
+        meshRef.current.rotation.y = Math.sin(time * 0.8) * 0.08;
+        materialRef.current.distort = 0.3 + Math.sin(time * 3) * 0.1;
         break;
       default:
-        // Gentle breathing
-        meshRef.current.scale.setScalar(1 + Math.sin(time * 0.8) * 0.04);
-        meshRef.current.rotation.y = Math.sin(time * 0.3) * 0.05;
-        meshRef.current.rotation.x = Math.cos(time * 0.4) * 0.05;
-        materialRef.current.distort = 0.2;
+        // Gentle organic breathing - asymmetric
+        const breathScale = 1 + Math.sin(time * 0.8) * 0.05;
+        meshRef.current.scale.set(
+          breathScale * 1.02,
+          breathScale * 0.97,
+          breathScale
+        );
+        meshRef.current.rotation.y = Math.sin(time * 0.3) * 0.06;
+        meshRef.current.rotation.x = Math.cos(time * 0.4) * 0.04;
+        meshRef.current.rotation.z = Math.sin(time * 0.35) * 0.03;
+        materialRef.current.distort = 0.25;
         break;
     }
   });
 
   return (
-    <Sphere ref={meshRef} args={[1.4, 128, 128]} scale={[1, 1.1, 0.95]}>
+    <mesh ref={meshRef} geometry={brainGeometry} scale={1.4}>
       <MeshDistortMaterial
         ref={materialRef}
         color={colors.color}
         emissive={colors.emissive}
         emissiveIntensity={colors.emissiveIntensity}
-        metalness={0.2}
-        roughness={0.3}
-        distort={0.2}
-        speed={1.5}
+        metalness={0.15}
+        roughness={0.4}
+        distort={0.25}
+        speed={1.2}
         transparent
-        opacity={0.95}
+        opacity={0.92}
       />
-    </Sphere>
+    </mesh>
   );
 };
 
-// Neural particles floating around
+// Neural particles floating around brain
 const NeuralParticles = ({ state }: BrainOrganismProps) => {
   const particlesRef = useRef<THREE.Points>(null);
 
-  const particleCount = 80;
+  const particleCount = 100;
   const positions = useMemo(() => {
     const pos = new Float32Array(particleCount * 3);
     for (let i = 0; i < particleCount; i++) {
-      const radius = 1.8 + Math.random() * 0.5;
+      // Particles follow brain shape more closely
+      const radius = 2.0 + Math.random() * 0.6;
       const theta = Math.random() * Math.PI * 2;
       const phi = Math.random() * Math.PI;
+      
+      // Brain-shaped distribution
+      const brainModulation = Math.abs(Math.sin(theta * 2)) * 0.3;
 
-      pos[i * 3] = radius * Math.sin(phi) * Math.cos(theta);
-      pos[i * 3 + 1] = radius * Math.sin(phi) * Math.sin(theta);
-      pos[i * 3 + 2] = radius * Math.cos(phi);
+      pos[i * 3] = radius * Math.sin(phi) * Math.cos(theta) * (1 + brainModulation);
+      pos[i * 3 + 1] = radius * Math.sin(phi) * Math.sin(theta) * 1.1;
+      pos[i * 3 + 2] = radius * Math.cos(phi) * (1 + brainModulation);
     }
     return pos;
   }, []);
@@ -117,16 +180,24 @@ const NeuralParticles = ({ state }: BrainOrganismProps) => {
     if (!particlesRef.current) return;
     
     const time = clock.getElapsedTime();
-    particlesRef.current.rotation.y = time * 0.1;
     
-    // Pulse particles based on state
-    const intensity = state === "listening" ? 2 : state === "speaking" ? 1.5 : 0.5;
+    // Organic rotation
+    particlesRef.current.rotation.y = time * 0.08;
+    particlesRef.current.rotation.x = Math.sin(time * 0.3) * 0.05;
+    
+    // Pulse particles based on state with organic motion
+    const intensity = state === "listening" ? 2.5 : state === "speaking" ? 2 : 0.8;
     const positions = particlesRef.current.geometry.attributes.position.array as Float32Array;
     
     for (let i = 0; i < particleCount; i++) {
       const i3 = i * 3;
-      const pulse = Math.sin(time * intensity + i * 0.1) * 0.05;
+      const phase = i * 0.1;
+      const pulse = Math.sin(time * intensity + phase) * 0.04;
+      const drift = Math.cos(time * 0.5 + phase) * 0.02;
+      
+      positions[i3] += drift;
       positions[i3 + 1] += pulse;
+      positions[i3 + 2] += Math.sin(time * 0.6 + phase) * 0.02;
     }
     
     particlesRef.current.geometry.attributes.position.needsUpdate = true;
@@ -143,11 +214,12 @@ const NeuralParticles = ({ state }: BrainOrganismProps) => {
         />
       </bufferGeometry>
       <pointsMaterial
-        size={0.04}
-        color="#a78bfa"
+        size={0.045}
+        color={state === "listening" ? "#86efac" : state === "speaking" ? "#fcd34d" : "#c4b5fd"}
         transparent
-        opacity={0.6}
+        opacity={0.7}
         sizeAttenuation
+        blending={THREE.AdditiveBlending}
       />
     </points>
   );
@@ -167,12 +239,13 @@ export const BrainOrganism3D = ({ state, onClick }: { state: OrganismState; onCl
       }}
     >
       <Canvas
-        camera={{ position: [0, 0, 4], fov: 45 }}
-        gl={{ alpha: true, antialias: true }}
+        camera={{ position: [0, 0.3, 4.2], fov: 42 }}
+        gl={{ alpha: true, antialias: true, powerPreference: "high-performance" }}
       >
-        <ambientLight intensity={0.3} />
-        <pointLight position={[10, 10, 10]} intensity={0.8} color="#a78bfa" />
-        <pointLight position={[-10, -10, -10]} intensity={0.4} color="#ec4899" />
+        <ambientLight intensity={0.4} />
+        <pointLight position={[8, 8, 8]} intensity={1} color="#c4b5fd" />
+        <pointLight position={[-8, -8, -8]} intensity={0.5} color="#f9a8d4" />
+        <pointLight position={[0, 10, 0]} intensity={0.6} color="#e9d5ff" />
         
         <BrainMesh state={state} />
         <NeuralParticles state={state} />
