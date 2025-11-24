@@ -1,51 +1,47 @@
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { CosmicBackground } from "@/components/CosmicBackground";
 import { NeuralSphere } from "@/components/NeuralSphere";
 import { toast } from "sonner";
+import { useVoiceSession } from "@/hooks/useVoiceSession";
 
 type AppState = "idle" | "listening" | "processing" | "speaking";
 
 const Index = () => {
-  const [state, setState] = useState<AppState>("idle");
+  const { state, errorMessage, toggleSession } = useVoiceSession();
 
-  // Simulate state transitions for demo
-  const handleSphereClick = () => {
-    if (state === "idle") {
-      // Start listening
-      setState("listening");
+  // Map voice session states to app states
+  const appState: AppState = 
+    state === "connecting" ? "processing" :
+    state === "error" ? "idle" :
+    state as AppState;
+
+  // Handle state changes with toasts
+  useEffect(() => {
+    if (state === "listening") {
       toast.success("מתחיל הקלטה", {
         description: "דבר עכשיו עם NUCLEUS-ATLAS",
       });
-
-      // Simulate user stopping after 3 seconds
-      setTimeout(() => {
-        setState("processing");
-        toast.info("מעבד...", {
-          description: "חושב על התשובה",
-        });
-
-        // Simulate AI response after 2 seconds
-        setTimeout(() => {
-          setState("speaking");
-          toast.success("NUCLEUS משיב", {
-            description: "מקשיב לתשובה",
-          });
-
-          // Return to idle after 4 seconds
-          setTimeout(() => {
-            setState("idle");
-          }, 4000);
-        }, 2000);
-      }, 3000);
-    } else if (state === "listening") {
-      // Stop recording manually
-      setState("processing");
-      toast.info("מעבד...");
+    } else if (state === "processing") {
+      toast.info("מעבד...", {
+        description: "חושב על התשובה",
+      });
+    } else if (state === "speaking") {
+      toast.success("NUCLEUS משיב", {
+        description: "מקשיב לתשובה",
+      });
+    } else if (state === "error") {
+      toast.error("שגיאה", {
+        description: errorMessage || "אירעה שגיאה",
+      });
     }
+  }, [state, errorMessage]);
+
+  const handleSphereClick = async () => {
+    await toggleSession();
   };
 
   const getStatusText = () => {
-    switch (state) {
+    switch (appState) {
       case "listening":
         return { main: "אני מקשיב...", sub: "NUCLEUS ATLAS" };
       case "processing":
@@ -59,14 +55,14 @@ const Index = () => {
 
   const statusText = getStatusText();
 
-  // Simulate haptic feedback on state changes
+  // Haptic feedback on state changes
   useEffect(() => {
     if ("vibrate" in navigator) {
-      if (state === "listening" || state === "speaking") {
+      if (appState === "listening" || appState === "speaking") {
         navigator.vibrate(50);
       }
     }
-  }, [state]);
+  }, [appState]);
 
   return (
     <div className="relative min-h-screen w-full overflow-hidden">
@@ -78,7 +74,7 @@ const Index = () => {
           <h2
             className="text-xl tracking-[0.4em] font-light lightning-text transition-opacity duration-300"
             style={{
-              opacity: state === "idle" ? 1 : 0.3,
+              opacity: appState === "idle" ? 1 : 0.3,
             }}
           >
             WE 2.0
@@ -87,7 +83,7 @@ const Index = () => {
 
         {/* Neural Sphere */}
         <div className="mb-10">
-          <NeuralSphere state={state} onClick={handleSphereClick} />
+          <NeuralSphere state={appState} onClick={handleSphereClick} />
         </div>
 
         {/* Logo Text */}
@@ -96,7 +92,7 @@ const Index = () => {
             <h1
               className="text-2xl tracking-[0.3em] font-extralight lightning-text transition-opacity duration-300"
               style={{
-                opacity: state === "idle" ? 1 : 0.3,
+                opacity: appState === "idle" ? 1 : 0.3,
               }}
             >
               {statusText.sub}
@@ -111,7 +107,7 @@ const Index = () => {
               className="text-xs tracking-[0.35em] font-extralight transition-opacity duration-300"
               style={{
                 color: "rgba(255, 255, 255, 0.35)",
-                opacity: state === "idle" ? 1 : 0.3,
+                opacity: appState === "idle" ? 1 : 0.3,
               }}
             >
               © 2025 THRIVE SYSTEM
@@ -123,11 +119,11 @@ const Index = () => {
         <div className="text-center animate-fade-in" dir="rtl" style={{ animationDelay: '0.7s' }}>
           <p
             className={`text-sm font-light transition-all duration-300 ${
-              state === "idle" ? "animate-gentle-pulse" : ""
+              appState === "idle" ? "animate-gentle-pulse" : ""
             }`}
             style={{
               color:
-                state === "idle"
+                appState === "idle"
                   ? "rgba(255, 255, 255, 0.4)"
                   : "rgba(255, 255, 255, 0.7)",
             }}
@@ -137,7 +133,7 @@ const Index = () => {
         </div>
 
         {/* Recording Indicator */}
-        {state === "listening" && (
+        {appState === "listening" && (
           <div className="absolute bottom-[60px] flex items-center gap-2" dir="rtl">
             <div className="w-2 h-2 rounded-full bg-destructive animate-recording-pulse" />
             <span className="text-xs text-destructive/80">הקלטה פעילה</span>
@@ -145,17 +141,17 @@ const Index = () => {
         )}
 
         {/* Subtle Hint Text */}
-        {state === "idle" && (
+        {appState === "idle" && (
           <div className="absolute bottom-8 text-center px-6 animate-fade-in" dir="rtl" style={{ animationDelay: '0.9s' }}>
             <p className="text-xs text-muted-foreground/30 font-light">
-              ממשק קול עתידני לתקשורת עם NUCLEUS-ATLAS
+              לחץ על הכדור כדי להתחיל שיחה עם NUCLEUS-ATLAS
             </p>
           </div>
         )}
       </div>
 
       {/* Settings Icon - Minimal, only visible on first load */}
-      {state === "idle" && (
+      {appState === "idle" && (
         <button
           className="absolute top-6 right-6 w-6 h-6 opacity-30 hover:opacity-60 transition-opacity"
           onClick={() => toast.info("הגדרות", { description: "בקרוב..." })}
