@@ -207,6 +207,16 @@ All colors MUST be HSL.
     }
   }
   
+  /* Lightning Shine Effect */
+  @keyframes lightning-shine {
+    0% {
+      background-position: -200% center;
+    }
+    100% {
+      background-position: 200% center;
+    }
+  }
+  
   .animate-breathe {
     animation: breathe 5.5s ease-in-out infinite;
   }
@@ -265,6 +275,25 @@ All colors MUST be HSL.
   
   .animate-neural-pulse {
     animation: neural-pulse 3s ease-in-out infinite;
+  }
+  
+  .lightning-text {
+    background: linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0.6) 0%,
+      rgba(167, 139, 250, 0.9) 25%,
+      rgba(236, 72, 153, 1) 35%,
+      rgba(255, 255, 255, 1) 40%,
+      rgba(255, 255, 255, 1) 45%,
+      rgba(236, 72, 153, 1) 50%,
+      rgba(167, 139, 250, 0.9) 60%,
+      rgba(255, 255, 255, 0.6) 100%
+    );
+    background-size: 200% auto;
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: lightning-shine 3s linear infinite;
   }
 }
 

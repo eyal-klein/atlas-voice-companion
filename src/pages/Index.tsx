@@ -95,9 +95,8 @@ const Index = () => {
         {statusText.sub && (
           <div className="text-center mb-2">
             <h1
-              className="text-2xl tracking-[0.3em] font-extralight transition-opacity duration-300"
+              className="text-2xl tracking-[0.3em] font-extralight lightning-text transition-opacity duration-300"
               style={{
-                color: "rgba(255, 255, 255, 0.6)",
                 opacity: state === "idle" ? 1 : 0.3,
               }}
             >
