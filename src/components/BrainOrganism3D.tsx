@@ -258,6 +258,84 @@ const InternalLight = ({ state }: BrainOrganismProps) => {
   );
 };
 
+// Synaptic connections between bioluminescent spots
+const SynapticConnections = ({ state }: BrainOrganismProps) => {
+  const linesRef = useRef<THREE.LineSegments>(null);
+  
+  const connectionCount = 25;
+  const { positions, connections, phases } = useMemo(() => {
+    const pos = new Float32Array(connectionCount * 6); // 2 points per line, 3 coords per point
+    const conn = [];
+    const phs = new Float32Array(connectionCount);
+    
+    // Generate random connections between spots on brain surface
+    for (let i = 0; i < connectionCount; i++) {
+      // Random points on brain surface (matching BioluminescentSpots positioning)
+      const theta1 = Math.random() * Math.PI * 2;
+      const phi1 = Math.random() * Math.PI;
+      const theta2 = Math.random() * Math.PI * 2;
+      const phi2 = Math.random() * Math.PI;
+      const radius = 1.45;
+      
+      const brainMod1 = Math.abs(Math.sin(theta1 * 2)) * 0.3;
+      const brainMod2 = Math.abs(Math.sin(theta2 * 2)) * 0.3;
+      
+      // First point
+      pos[i * 6] = radius * Math.sin(phi1) * Math.cos(theta1) * (1 + brainMod1);
+      pos[i * 6 + 1] = radius * Math.sin(phi1) * Math.sin(theta1) * 1.1;
+      pos[i * 6 + 2] = radius * Math.cos(phi1) * (1 + brainMod1);
+      
+      // Second point
+      pos[i * 6 + 3] = radius * Math.sin(phi2) * Math.cos(theta2) * (1 + brainMod2);
+      pos[i * 6 + 4] = radius * Math.sin(phi2) * Math.sin(theta2) * 1.1;
+      pos[i * 6 + 5] = radius * Math.cos(phi2) * (1 + brainMod2);
+      
+      conn.push({ start: i * 2, end: i * 2 + 1 });
+      phs[i] = Math.random() * Math.PI * 2;
+    }
+    
+    return { positions: pos, connections: conn, phases: phs };
+  }, []);
+  
+  useFrame(({ clock }) => {
+    if (!linesRef.current) return;
+    
+    const time = clock.getElapsedTime();
+    const material = linesRef.current.material as THREE.LineBasicMaterial;
+    
+    // Rotate with brain
+    linesRef.current.rotation.y = time * 0.05;
+    
+    // Flickering effect - varies by state
+    const flickerSpeed = state === "processing" ? 3 : state === "listening" ? 2.5 : 1.5;
+    const baseOpacity = state === "processing" ? 0.7 : state === "listening" ? 0.6 : 0.4;
+    
+    // Create pulsing flicker effect
+    const flicker = Math.sin(time * flickerSpeed) * 0.3 + 0.7;
+    material.opacity = baseOpacity * flicker;
+  });
+  
+  return (
+    <lineSegments ref={linesRef}>
+      <bufferGeometry>
+        <bufferAttribute
+          attach="attributes-position"
+          count={connectionCount * 2}
+          array={positions}
+          itemSize={3}
+        />
+      </bufferGeometry>
+      <lineBasicMaterial
+        color={state === "processing" ? "#38bdf8" : state === "listening" ? "#22d3ee" : "#5eead4"}
+        transparent
+        opacity={0.5}
+        linewidth={1}
+        blending={THREE.AdditiveBlending}
+      />
+    </lineSegments>
+  );
+};
+
 // Neural particles floating around brain
 const NeuralParticles = ({ state }: BrainOrganismProps) => {
   const particlesRef = useRef<THREE.Points>(null);
@@ -356,6 +434,7 @@ export const BrainOrganism3D = ({ state, onClick }: { state: OrganismState; onCl
         <BrainMesh state={state} />
         <InternalLight state={state} />
         <BioluminescentSpots state={state} />
+        <SynapticConnections state={state} />
         <NeuralParticles state={state} />
       </Canvas>
     </div>
