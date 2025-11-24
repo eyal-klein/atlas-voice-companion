@@ -77,15 +77,28 @@ All colors MUST be HSL.
 }
 
 @layer utilities {
-  /* Breathing Animation */
+  /* Organic Breathing Animation - Asymmetric */
   @keyframes breathe {
     0%, 100% { 
-      transform: scale(1);
-      filter: drop-shadow(0 0 60px rgba(139, 92, 246, 0.4));
+      transform: scale(1, 1) rotate(0deg);
+      filter: 
+        drop-shadow(0 0 50px rgba(139, 92, 246, 0.6))
+        drop-shadow(0 0 90px rgba(167, 139, 250, 0.3))
+        drop-shadow(0 0 120px rgba(236, 72, 153, 0.15));
     }
-    50% { 
-      transform: scale(1.08);
-      filter: drop-shadow(0 0 80px rgba(139, 92, 246, 0.6));
+    33% { 
+      transform: scale(1.06, 0.97) rotate(-1deg);
+      filter: 
+        drop-shadow(0 0 60px rgba(139, 92, 246, 0.7))
+        drop-shadow(0 0 100px rgba(167, 139, 250, 0.4))
+        drop-shadow(0 0 130px rgba(236, 72, 153, 0.2));
+    }
+    66% { 
+      transform: scale(0.97, 1.06) rotate(1deg);
+      filter: 
+        drop-shadow(0 0 55px rgba(139, 92, 246, 0.65))
+        drop-shadow(0 0 95px rgba(167, 139, 250, 0.35))
+        drop-shadow(0 0 125px rgba(236, 72, 153, 0.18));
     }
   }
   
@@ -180,11 +193,27 @@ All colors MUST be HSL.
   }
   
   .animate-breathe {
-    animation: breathe 4s ease-in-out infinite;
+    animation: breathe 5.5s ease-in-out infinite;
   }
   
   .animate-breathe-fast {
-    animation: breathe 2s ease-in-out infinite;
+    animation: breathe 2.5s ease-in-out infinite;
+  }
+  
+  /* Membrane shimmer effect */
+  @keyframes membrane-shimmer {
+    0%, 100% { 
+      background-position: 0% 50%; 
+      opacity: 0.6;
+    }
+    50% { 
+      background-position: 100% 50%; 
+      opacity: 0.8;
+    }
+  }
+  
+  .animate-membrane-shimmer {
+    animation: membrane-shimmer 4s ease infinite;
   }
   
   .animate-gentle-pulse {
