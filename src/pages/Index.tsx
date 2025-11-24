@@ -74,7 +74,7 @@ const Index = () => {
 
       <div className="relative flex flex-col items-center justify-start min-h-screen pt-[25vh] px-6">
         {/* WE 2.0 Title */}
-        <div className="text-center mb-8">
+        <div className="text-center mb-8 animate-fade-in" style={{ animationDelay: '0.1s' }}>
           <h2
             className="text-xl tracking-[0.4em] font-light lightning-text transition-opacity duration-300"
             style={{
@@ -92,7 +92,7 @@ const Index = () => {
 
         {/* Logo Text */}
         {statusText.sub && (
-          <div className="text-center mb-2">
+          <div className="text-center mb-2 animate-fade-in" style={{ animationDelay: '0.3s' }}>
             <h1
               className="text-2xl tracking-[0.3em] font-extralight lightning-text transition-opacity duration-300"
               style={{
@@ -106,7 +106,7 @@ const Index = () => {
 
         {/* © 2025 THRIVE SYSTEM Subtitle */}
         {statusText.sub && (
-          <div className="text-center mb-4">
+          <div className="text-center mb-4 animate-fade-in" style={{ animationDelay: '0.5s' }}>
             <h3
               className="text-xs tracking-[0.35em] font-extralight transition-opacity duration-300"
               style={{
@@ -120,7 +120,7 @@ const Index = () => {
         )}
 
         {/* Status Text */}
-        <div className="text-center" dir="rtl">
+        <div className="text-center animate-fade-in" dir="rtl" style={{ animationDelay: '0.7s' }}>
           <p
             className={`text-sm font-light transition-all duration-300 ${
               state === "idle" ? "animate-gentle-pulse" : ""
@@ -146,7 +146,7 @@ const Index = () => {
 
         {/* Subtle Hint Text */}
         {state === "idle" && (
-          <div className="absolute bottom-8 text-center px-6" dir="rtl">
+          <div className="absolute bottom-8 text-center px-6 animate-fade-in" dir="rtl" style={{ animationDelay: '0.9s' }}>
             <p className="text-xs text-muted-foreground/30 font-light">
               ממשק קול עתידני לתקשורת עם NUCLEUS-ATLAS
             </p>
