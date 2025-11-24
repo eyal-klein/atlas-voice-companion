@@ -158,6 +158,72 @@ const BrainMesh = ({ state }: BrainOrganismProps) => {
   );
 };
 
+// Bioluminescent spots on brain surface
+const BioluminescentSpots = ({ state }: BrainOrganismProps) => {
+  const spotsRef = useRef<THREE.Points>(null);
+  const opacitiesRef = useRef<Float32Array>();
+  
+  const spotCount = 60;
+  const { positions, phases } = useMemo(() => {
+    const pos = new Float32Array(spotCount * 3);
+    const phs = new Float32Array(spotCount);
+    
+    for (let i = 0; i < spotCount; i++) {
+      // Position on brain surface
+      const theta = Math.random() * Math.PI * 2;
+      const phi = Math.random() * Math.PI;
+      const radius = 1.45; // Slightly larger than brain radius to sit on surface
+      
+      const brainModulation = Math.abs(Math.sin(theta * 2)) * 0.3;
+      
+      pos[i * 3] = radius * Math.sin(phi) * Math.cos(theta) * (1 + brainModulation);
+      pos[i * 3 + 1] = radius * Math.sin(phi) * Math.sin(theta) * 1.1;
+      pos[i * 3 + 2] = radius * Math.cos(phi) * (1 + brainModulation);
+      
+      // Random phase for flickering
+      phs[i] = Math.random() * Math.PI * 2;
+    }
+    
+    return { positions: pos, phases: phs };
+  }, []);
+  
+  useFrame(({ clock }) => {
+    if (!spotsRef.current) return;
+    
+    const time = clock.getElapsedTime();
+    const material = spotsRef.current.material as THREE.PointsMaterial;
+    
+    // Rotate with brain
+    spotsRef.current.rotation.y = time * 0.05;
+    
+    // Individual spot flickering (would need custom shader for true per-particle opacity)
+    // For now, we'll use global pulsing with variation
+    const basePulse = Math.sin(time * 2) * 0.3 + 0.7;
+    material.opacity = basePulse * (state === "listening" ? 0.9 : 0.7);
+  });
+  
+  return (
+    <points ref={spotsRef}>
+      <bufferGeometry>
+        <bufferAttribute
+          attach="attributes-position"
+          count={spotCount}
+          array={positions}
+          itemSize={3}
+        />
+      </bufferGeometry>
+      <pointsMaterial
+        size={0.08}
+        color={state === "listening" ? "#5eead4" : state === "speaking" ? "#34d399" : "#22d3ee"}
+        transparent
+        opacity={0.8}
+        sizeAttenuation
+        blending={THREE.AdditiveBlending}
+      />
+    </points>
+  );
+};
+
 // Neural particles floating around brain
 const NeuralParticles = ({ state }: BrainOrganismProps) => {
   const particlesRef = useRef<THREE.Points>(null);
@@ -254,6 +320,7 @@ export const BrainOrganism3D = ({ state, onClick }: { state: OrganismState; onCl
         <pointLight position={[5, -5, 5]} intensity={0.5} color="#0ea5e9" />
         
         <BrainMesh state={state} />
+        <BioluminescentSpots state={state} />
         <NeuralParticles state={state} />
       </Canvas>
     </div>
