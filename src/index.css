@@ -153,6 +153,32 @@ All colors MUST be HSL.
     }
   }
   
+  /* Gentle 3D Rotation for Brain Sphere */
+  @keyframes gentle-rotate {
+    0% {
+      transform: rotateY(-2deg) rotateX(2deg);
+    }
+    50% {
+      transform: rotateY(2deg) rotateX(-2deg);
+    }
+    100% {
+      transform: rotateY(-2deg) rotateX(2deg);
+    }
+  }
+  
+  /* Neural Pulse Animation */
+  @keyframes neural-pulse {
+    0% {
+      opacity: 0.2;
+    }
+    50% {
+      opacity: 0.8;
+    }
+    100% {
+      opacity: 0.2;
+    }
+  }
+  
   .animate-breathe {
     animation: breathe 4s ease-in-out infinite;
   }
@@ -183,6 +209,14 @@ All colors MUST be HSL.
   
   .animate-slow-rotate {
     animation: slow-rotate 20s linear infinite;
+  }
+  
+  .animate-gentle-rotate {
+    animation: gentle-rotate 20s ease-in-out infinite;
+  }
+  
+  .animate-neural-pulse {
+    animation: neural-pulse 3s ease-in-out infinite;
   }
 }
 
