@@ -76,9 +76,8 @@ const Index = () => {
         {/* WE 2.0 Title */}
         <div className="text-center mb-8">
           <h2
-            className="text-xl tracking-[0.4em] font-light transition-opacity duration-300"
+            className="text-xl tracking-[0.4em] font-light lightning-text transition-opacity duration-300"
             style={{
-              color: "rgba(255, 255, 255, 0.5)",
               opacity: state === "idle" ? 1 : 0.3,
             }}
           >
