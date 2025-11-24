@@ -224,6 +224,40 @@ const BioluminescentSpots = ({ state }: BrainOrganismProps) => {
   );
 };
 
+// Internal energy light moving through the brain
+const InternalLight = ({ state }: BrainOrganismProps) => {
+  const lightRef = useRef<THREE.PointLight>(null);
+
+  useFrame(({ clock }) => {
+    if (!lightRef.current) return;
+
+    const time = clock.getElapsedTime();
+    
+    // Organic movement path through brain interior
+    const speed = state === "processing" ? 1.5 : state === "listening" ? 1.2 : 0.8;
+    const radius = 0.8; // Inside the brain
+    
+    // Lissajous curve for complex organic movement
+    lightRef.current.position.x = Math.sin(time * speed) * radius;
+    lightRef.current.position.y = Math.cos(time * speed * 1.3) * radius * 0.9;
+    lightRef.current.position.z = Math.sin(time * speed * 0.7) * radius;
+    
+    // Intensity varies by state
+    const baseIntensity = state === "processing" ? 3.5 : state === "listening" ? 2.5 : 1.8;
+    const pulse = Math.sin(time * 2) * 0.4 + 0.6;
+    lightRef.current.intensity = baseIntensity * pulse;
+  });
+
+  return (
+    <pointLight
+      ref={lightRef}
+      color={state === "processing" ? "#38bdf8" : state === "listening" ? "#22d3ee" : "#06b6d4"}
+      distance={4}
+      decay={2}
+    />
+  );
+};
+
 // Neural particles floating around brain
 const NeuralParticles = ({ state }: BrainOrganismProps) => {
   const particlesRef = useRef<THREE.Points>(null);
@@ -320,6 +354,7 @@ export const BrainOrganism3D = ({ state, onClick }: { state: OrganismState; onCl
         <pointLight position={[5, -5, 5]} intensity={0.5} color="#0ea5e9" />
         
         <BrainMesh state={state} />
+        <InternalLight state={state} />
         <BioluminescentSpots state={state} />
         <NeuralParticles state={state} />
       </Canvas>
