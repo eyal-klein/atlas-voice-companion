@@ -134,6 +134,21 @@ All colors MUST be HSL.
     }
   }
   
+  /* Pulse Wave Animation */
+  @keyframes pulse-wave {
+    0% {
+      transform: scale(0.8);
+      opacity: 0.8;
+    }
+    50% {
+      opacity: 0.4;
+    }
+    100% {
+      transform: scale(1.8);
+      opacity: 0;
+    }
+  }
+  
   /* Recording Pulse */
   @keyframes recording-pulse {
     0%, 100% {
@@ -226,6 +241,10 @@ All colors MUST be HSL.
   
   .animate-orbit {
     animation: orbit 2s linear infinite;
+  }
+  
+  .animate-pulse-wave {
+    animation: pulse-wave 2s ease-out forwards;
   }
   
   .animate-recording-pulse {
