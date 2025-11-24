@@ -706,7 +706,7 @@ const NeuralParticles = ({ state }: BrainOrganismProps) => {
 export const BrainOrganism3D = ({ state, onClick }: { state: OrganismState; onClick: () => void }) => {
   return (
     <div 
-      className="w-[240px] h-[240px] cursor-pointer"
+      className="w-[320px] h-[320px] cursor-pointer"
       onClick={onClick}
       style={{
         filter: state === "listening" 

@@ -72,7 +72,7 @@ const Index = () => {
         {/* WE 2.0 Title */}
         <div className="text-center mb-8 animate-fade-in" style={{ animationDelay: '0.1s' }}>
           <h2
-            className="text-xl tracking-[0.4em] font-light lightning-text transition-opacity duration-300"
+            className="text-3xl tracking-[0.4em] font-light lightning-text transition-opacity duration-300"
             style={{
               opacity: appState === "idle" ? 1 : 0.3,
             }}
@@ -90,7 +90,7 @@ const Index = () => {
         {statusText.sub && (
           <div className="text-center mb-2 animate-fade-in" style={{ animationDelay: '0.3s' }}>
             <h1
-              className="text-2xl tracking-[0.3em] font-extralight lightning-text transition-opacity duration-300"
+              className="text-4xl tracking-[0.3em] font-extralight lightning-text transition-opacity duration-300"
               style={{
                 opacity: appState === "idle" ? 1 : 0.3,
               }}
@@ -104,7 +104,7 @@ const Index = () => {
         {statusText.sub && (
           <div className="text-center mb-4 animate-fade-in" style={{ animationDelay: '0.5s' }}>
             <h3
-              className="text-xs tracking-[0.35em] font-extralight transition-opacity duration-300"
+              className="text-sm tracking-[0.35em] font-extralight transition-opacity duration-300"
               style={{
                 color: "rgba(255, 255, 255, 0.35)",
                 opacity: appState === "idle" ? 1 : 0.3,
@@ -118,7 +118,7 @@ const Index = () => {
         {/* Status Text */}
         <div className="text-center animate-fade-in" dir="rtl" style={{ animationDelay: '0.7s' }}>
           <p
-            className={`text-sm font-light transition-all duration-300 ${
+            className={`text-lg font-light transition-all duration-300 ${
               appState === "idle" ? "animate-gentle-pulse" : ""
             }`}
             style={{
@@ -136,7 +136,7 @@ const Index = () => {
         {transcript && (
           <div className="mt-6 max-w-md mx-auto px-6 animate-fade-in" dir="rtl">
             <div className="bg-black/30 backdrop-blur-sm border border-white/10 rounded-lg p-4">
-              <p className="text-sm text-white/80 font-light text-center">
+              <p className="text-base text-white/80 font-light text-center">
                 {transcript}
               </p>
             </div>
@@ -147,14 +147,14 @@ const Index = () => {
         {appState === "listening" && (
           <div className="absolute bottom-[60px] flex items-center gap-2" dir="rtl">
             <div className="w-2 h-2 rounded-full bg-destructive animate-recording-pulse" />
-            <span className="text-xs text-destructive/80">הקלטה פעילה</span>
+            <span className="text-sm text-destructive/80">הקלטה פעילה</span>
           </div>
         )}
 
         {/* Subtle Hint Text */}
         {appState === "idle" && (
           <div className="absolute bottom-8 text-center px-6 animate-fade-in" dir="rtl" style={{ animationDelay: '0.9s' }}>
-            <p className="text-xs text-muted-foreground/30 font-light">
+            <p className="text-sm text-muted-foreground/30 font-light">
               לחץ על הכדור כדי להתחיל שיחה עם NUCLEUS-ATLAS
             </p>
           </div>

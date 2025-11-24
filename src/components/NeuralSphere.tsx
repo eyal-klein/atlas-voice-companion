@@ -66,7 +66,7 @@ export const NeuralSphere = ({ state, onClick }: NeuralSphereProps) => {
         pulseWaves.map((id) => (
           <div
             key={`pulse-${id}`}
-            className="absolute w-[240px] h-[240px] rounded-full animate-pulse-wave pointer-events-none"
+            className="absolute w-[320px] h-[320px] rounded-full animate-pulse-wave pointer-events-none"
             style={{
               background: state === "listening" 
                 ? "radial-gradient(circle, rgba(6, 182, 212, 0.4) 0%, rgba(6, 182, 212, 0) 70%)"
@@ -87,7 +87,7 @@ export const NeuralSphere = ({ state, onClick }: NeuralSphereProps) => {
         rings.map((id) => (
           <div
             key={`ring-${id}`}
-            className="absolute w-[240px] h-[240px] rounded-full border-2 border-secondary/50 animate-wave-ring pointer-events-none"
+            className="absolute w-[320px] h-[320px] rounded-full border-2 border-secondary/50 animate-wave-ring pointer-events-none"
           />
         ))}
 
@@ -96,7 +96,7 @@ export const NeuralSphere = ({ state, onClick }: NeuralSphereProps) => {
 
       {/* Orbit Ring - Processing State */}
       {state === "processing" && (
-        <div className="absolute w-[260px] h-[260px] pointer-events-none">
+        <div className="absolute w-[340px] h-[340px] pointer-events-none">
           <div className="w-full h-full rounded-full border border-secondary/60 animate-orbit" />
         </div>
       )}
