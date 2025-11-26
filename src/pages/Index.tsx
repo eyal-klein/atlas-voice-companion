@@ -1,13 +1,27 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { CosmicBackground } from "@/components/CosmicBackground";
 import { NeuralSphere } from "@/components/NeuralSphere";
 import { toast } from "sonner";
 import { useVoiceSession } from "@/hooks/useVoiceSession";
+import { Send } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 type AppState = "idle" | "listening" | "processing" | "speaking";
 
+interface Message {
+  id: string;
+  role: "user" | "assistant" | "system";
+  content: string;
+  timestamp: Date;
+}
+
 const Index = () => {
   const { state, errorMessage, transcript, toggleSession } = useVoiceSession();
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [textInput, setTextInput] = useState("");
+  const [showChat, setShowChat] = useState(false);
 
   // Map voice session states to app states
   const appState: AppState = 
@@ -36,8 +50,66 @@ const Index = () => {
     }
   }, [state, errorMessage]);
 
+  // Update messages when transcript changes
+  useEffect(() => {
+    if (transcript) {
+      const isUser = transcript.startsWith("את/ה:");
+      const isNucleus = transcript.startsWith("NUCLEUS:");
+      const isTool = transcript.startsWith("🔧");
+
+      const content = transcript.replace(/^(את\/ה:|NUCLEUS:|🔧 משתמש ב:)\s*/, "");
+      
+      setMessages(prev => {
+        // Remove last message if it's the same role (updating transcript)
+        const filtered = prev.filter((msg, idx) => {
+          if (idx === prev.length - 1) {
+            if (isUser && msg.role === "user") return false;
+            if (isNucleus && msg.role === "assistant") return false;
+            if (isTool && msg.role === "system") return false;
+          }
+          return true;
+        });
+
+        return [
+          ...filtered,
+          {
+            id: Date.now().toString(),
+            role: isUser ? "user" : isNucleus ? "assistant" : "system",
+            content,
+            timestamp: new Date(),
+          },
+        ];
+      });
+
+      // Show chat panel when there are messages
+      if (!showChat) {
+        setShowChat(true);
+      }
+    }
+  }, [transcript, showChat]);
+
   const handleSphereClick = async () => {
     await toggleSession();
+  };
+
+  const handleSendText = async () => {
+    if (!textInput.trim()) return;
+
+    // Add user message
+    const userMessage: Message = {
+      id: Date.now().toString(),
+      role: "user",
+      content: textInput,
+      timestamp: new Date(),
+    };
+    setMessages(prev => [...prev, userMessage]);
+    setTextInput("");
+    setShowChat(true);
+
+    // TODO: Send to NUCLEUS text API
+    toast.info("Text Mode", {
+      description: "בקרוב - חיבור ל-NUCLEUS text API",
+    });
   };
 
   const getStatusText = () => {
@@ -68,11 +140,11 @@ const Index = () => {
     <div className="relative min-h-screen w-full overflow-hidden">
       <CosmicBackground />
 
-      <div className="relative flex flex-col items-center justify-start min-h-screen pt-[25vh] px-6">
+      <div className="relative flex flex-col items-center justify-start min-h-screen pt-[15vh] px-6">
         {/* WE 2.0 Title */}
-        <div className="text-center mb-8 animate-fade-in" style={{ animationDelay: '0.1s' }}>
+        <div className="text-center mb-6 animate-fade-in" style={{ animationDelay: '0.1s' }}>
           <h2
-            className="text-3xl tracking-[0.4em] font-light lightning-text transition-opacity duration-300"
+            className="text-2xl tracking-[0.4em] font-light lightning-text transition-opacity duration-300"
             style={{
               opacity: appState === "idle" ? 1 : 0.3,
             }}
@@ -82,7 +154,7 @@ const Index = () => {
         </div>
 
         {/* Neural Sphere */}
-        <div className="mb-10">
+        <div className="mb-6">
           <NeuralSphere state={appState} onClick={handleSphereClick} />
         </div>
 
@@ -90,7 +162,7 @@ const Index = () => {
         {statusText.sub && (
           <div className="text-center mb-2 animate-fade-in" style={{ animationDelay: '0.3s' }}>
             <h1
-              className="text-4xl tracking-[0.3em] font-extralight lightning-text transition-opacity duration-300"
+              className="text-3xl tracking-[0.3em] font-extralight lightning-text transition-opacity duration-300"
               style={{
                 opacity: appState === "idle" ? 1 : 0.3,
               }}
@@ -104,7 +176,7 @@ const Index = () => {
         {statusText.sub && (
           <div className="text-center mb-4 animate-fade-in" style={{ animationDelay: '0.5s' }}>
             <h3
-              className="text-sm tracking-[0.35em] font-extralight transition-opacity duration-300"
+              className="text-xs tracking-[0.35em] font-extralight transition-opacity duration-300"
               style={{
                 color: "rgba(255, 255, 255, 0.35)",
                 opacity: appState === "idle" ? 1 : 0.3,
@@ -116,9 +188,9 @@ const Index = () => {
         )}
 
         {/* Status Text */}
-        <div className="text-center animate-fade-in" dir="rtl" style={{ animationDelay: '0.7s' }}>
+        <div className="text-center animate-fade-in mb-4" dir="rtl" style={{ animationDelay: '0.7s' }}>
           <p
-            className={`text-lg font-light transition-all duration-300 ${
+            className={`text-base font-light transition-all duration-300 ${
               appState === "idle" ? "animate-gentle-pulse" : ""
             }`}
             style={{
@@ -132,30 +204,83 @@ const Index = () => {
           </p>
         </div>
 
-        {/* Transcript Display */}
-        {transcript && (
-          <div className="mt-6 max-w-md mx-auto px-6 animate-fade-in" dir="rtl">
-            <div className="bg-black/30 backdrop-blur-sm border border-white/10 rounded-lg p-4">
-              <p className="text-base text-white/80 font-light text-center">
-                {transcript}
-              </p>
-            </div>
+        {/* Chat Panel */}
+        {showChat && messages.length > 0 && (
+          <div className="w-full max-w-2xl mx-auto mb-4 animate-fade-in">
+            <ScrollArea className="h-[200px] rounded-lg border border-white/10 bg-black/30 backdrop-blur-sm p-4">
+              <div className="space-y-3" dir="rtl">
+                {messages.map((message) => (
+                  <div
+                    key={message.id}
+                    className={`flex ${message.role === "user" ? "justify-start" : "justify-end"}`}
+                  >
+                    <div
+                      className={`max-w-[80%] rounded-lg px-4 py-2 ${
+                        message.role === "user"
+                          ? "bg-primary/20 text-primary-foreground"
+                          : message.role === "assistant"
+                          ? "bg-secondary/20 text-secondary-foreground"
+                          : "bg-muted/20 text-muted-foreground text-sm"
+                      }`}
+                    >
+                      <p className="text-sm">{message.content}</p>
+                      <p className="text-xs opacity-50 mt-1">
+                        {message.timestamp.toLocaleTimeString("he-IL", {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </ScrollArea>
           </div>
         )}
 
+        {/* Text Input Area */}
+        <div className="w-full max-w-2xl mx-auto mb-4 animate-fade-in" style={{ animationDelay: '0.9s' }}>
+          <div className="flex gap-2">
+            <Input
+              type="text"
+              placeholder="הקלד הודעה ל-NUCLEUS..."
+              value={textInput}
+              onChange={(e) => setTextInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  handleSendText();
+                }
+              }}
+              className="flex-1 bg-black/30 backdrop-blur-sm border-white/10 text-white placeholder:text-white/40"
+              dir="rtl"
+            />
+            <Button
+              onClick={handleSendText}
+              disabled={!textInput.trim()}
+              className="bg-primary/20 hover:bg-primary/30 border border-primary/30"
+            >
+              <Send className="h-4 w-4" />
+            </Button>
+          </div>
+          <p className="text-xs text-muted-foreground/30 text-center mt-2" dir="rtl">
+            לחץ Enter לשליחה • Shift+Enter לשורה חדשה
+          </p>
+        </div>
+
         {/* Recording Indicator */}
         {appState === "listening" && (
-          <div className="absolute bottom-[60px] flex items-center gap-2" dir="rtl">
+          <div className="absolute bottom-[80px] flex items-center gap-2" dir="rtl">
             <div className="w-2 h-2 rounded-full bg-destructive animate-recording-pulse" />
             <span className="text-sm text-destructive/80">הקלטה פעילה</span>
           </div>
         )}
 
         {/* Subtle Hint Text */}
-        {appState === "idle" && (
-          <div className="absolute bottom-8 text-center px-6 animate-fade-in" dir="rtl" style={{ animationDelay: '0.9s' }}>
-            <p className="text-sm text-muted-foreground/30 font-light">
-              לחץ על הכדור כדי להתחיל שיחה עם NUCLEUS-ATLAS
+        {appState === "idle" && !showChat && (
+          <div className="absolute bottom-8 text-center px-6 animate-fade-in" dir="rtl" style={{ animationDelay: '1.1s' }}>
+            <p className="text-xs text-muted-foreground/30 font-light">
+              לחץ על הכדור לשיחה קולית או הקלד הודעה למטה
             </p>
           </div>
         )}
