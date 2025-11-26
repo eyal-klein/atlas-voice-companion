@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { CosmicBackground } from "@/components/CosmicBackground";
 import { NeuralSphere } from "@/components/NeuralSphere";
 import { toast } from "sonner";
-import { useVoiceSession } from "@/hooks/useVoiceSession";
+import { useVoice } from "@/hooks/useVoice";
 import { Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,37 +18,37 @@ interface Message {
 }
 
 const Index = () => {
-  const { state, errorMessage, transcript, toggleSession } = useVoiceSession();
   const [messages, setMessages] = useState<Message[]>([]);
   const [textInput, setTextInput] = useState("");
   const [showChat, setShowChat] = useState(false);
+  const [transcript, setTranscript] = useState("");
+
+  // Use new useVoice hook
+  const { isSessionActive, isRecording, startCall, endCall } = useVoice({
+    onTranscript: (text) => {
+      console.log('📝 Transcript:', text);
+      setTranscript(`את/ה: ${text}`);
+    },
+    onResponse: (text) => {
+      console.log('💬 Response:', text);
+      setTranscript(`NUCLEUS: ${text}`);
+    },
+  });
 
   // Map voice session states to app states
   const appState: AppState = 
-    state === "connecting" ? "processing" :
-    state === "error" ? "idle" :
-    state as AppState;
+    isRecording ? "listening" :
+    isSessionActive ? "processing" :
+    "idle";
 
   // Handle state changes with toasts
   useEffect(() => {
-    if (state === "listening") {
-      toast.success("מתחיל הקלטה", {
-        description: "דבר עכשיו עם NUCLEUS-ATLAS",
-      });
-    } else if (state === "processing") {
-      toast.info("מעבד...", {
-        description: "חושב על התשובה",
-      });
-    } else if (state === "speaking") {
-      toast.success("NUCLEUS משיב", {
-        description: "מקשיב לתשובה",
-      });
-    } else if (state === "error") {
-      toast.error("שגיאה", {
-        description: errorMessage || "אירעה שגיאה",
-      });
+    if (isRecording) {
+      console.log('🎤 Recording started');
+    } else if (isSessionActive) {
+      console.log('⏸️ Recording paused');
     }
-  }, [state, errorMessage]);
+  }, [isRecording, isSessionActive]);
 
   // Update messages when transcript changes
   useEffect(() => {
@@ -89,7 +89,11 @@ const Index = () => {
   }, [transcript, showChat]);
 
   const handleSphereClick = async () => {
-    await toggleSession();
+    if (isSessionActive) {
+      endCall();
+    } else {
+      await startCall();
+    }
   };
 
   const handleSendText = async () => {
