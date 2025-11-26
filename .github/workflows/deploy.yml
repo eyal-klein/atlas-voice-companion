@@ -32,7 +32,7 @@ jobs:
 
       - name: Build Docker image
         run: |
-          docker build -t ${{ env.IMAGE_NAME }}:${{ github.sha }} \
+          docker build --no-cache -t ${{ env.IMAGE_NAME }}:${{ github.sha }} \
                        -t ${{ env.IMAGE_NAME }}:latest .
 
       - name: Push Docker image
